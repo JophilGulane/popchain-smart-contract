@@ -1,38 +1,30 @@
 # PopChain Smart Contract Testing Guide
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Build Your Contract
 ```bash
 sui move build
 ```
 
-Your contract is already built! ✅ (I can see the build output)
-
-### 2. Start Local Sui Network (if not running)
+### 2. Switch to Testnet
 ```bash
-# Start a local validator
-sui-test-validator
+# Switch to testnet environment
+sui client switch --env testnet
 
-# This starts a local blockchain node at:
-# - JSON-RPC: http://127.0.0.1:9000
-# - WebSocket RPC: ws://127.0.0.1:9000
-# - Fullnode RPC: http://127.0.0.1:9000
+# Get test tokens
+sui client faucet
 ```
 
 ### 3. Deploy Your Contract
 ```bash
-# Deploy to local network
-sui client publish --gas-budget 100000000 --json
-
-# Or set active environment
-sui client active-address
+# Deploy to testnet
 sui client publish --gas-budget 100000000
+
+# After deployment, you'll get a Package ID - save this for testing
 ```
 
-After deployment, you'll get a **Package ID** - save this for testing!
-
-## 📝 Testing Your Contract Functions
+## Testing Your Contract Functions
 
 ### Workflow Overview
 
@@ -120,9 +112,9 @@ sui client call \
   --gas-budget 100000000
 ```
 
-## 🧪 Complete Test Script Example
+## Complete Test Script Example
 
-Save this as `test-popchain.sh`:
+Save this as test-popchain.sh:
 
 ```bash
 #!/bin/bash
@@ -130,20 +122,20 @@ Save this as `test-popchain.sh`:
 # Replace with your actual package ID after deployment
 PACKAGE_ID="0x..."
 
-echo "🧪 Testing PopChain Smart Contract"
+echo "Testing PopChain Smart Contract"
 
 # Initialize Platform
-echo "1️⃣ Initializing platform..."
+echo "1. Initializing platform..."
 sui client call --package $PACKAGE_ID --module popchain_admin --function init_platform \
   --args 1000 5000 2000 --gas-budget 100000000
 
 # Create Organizer Account
-echo "2️⃣ Creating organizer account..."
+echo "2. Creating organizer account..."
 EMAIL_HASH="0x1234567890abcdef" # Replace with actual hash
 sui client call --package $PACKAGE_ID --module popchain_user --function create_account \
   --args $EMAIL_HASH "1" "0x$(sui client active-address | head -n 1)" --gas-budget 100000000
 
-echo "✅ Test complete!"
+echo "Test complete!"
 ```
 
 Make it executable:
@@ -152,7 +144,7 @@ chmod +x test-popchain.sh
 ./test-popchain.sh
 ```
 
-## 🔍 Query and Inspect Objects
+## Query and Inspect Objects
 
 ### List Your Objects
 ```bash
@@ -169,7 +161,7 @@ sui client object <OBJECT_ID>
 sui client object <PACKAGE_ID>
 ```
 
-## 📊 Monitor Events
+## Monitor Events
 
 After calling functions, check events:
 ```bash
@@ -177,20 +169,20 @@ sui client transaction <TRANSACTION_DIGEST>
 ```
 
 Look for events like:
-- `CreatedAccount`
-- `PlatformInitialized`
-- `Deposited`
-- `EventCreated`
-- `CertificateMinted`
+- CreatedAccount
+- PlatformInitialized
+- Deposited
+- EventCreated
+- CertificateMinted
 
-## 🎯 Quick Testing Tips
+## Quick Testing Tips
 
-1. **Get Active Address**: `sui client active-address`
-2. **Get Gas**: `sui client gas`
-3. **Get Object by ID**: `sui client object <ID>`
-4. **View Package**: `sui client object <PACKAGE_ID>`
+1. Get Active Address: `sui client active-address`
+2. Get Gas: `sui client gas`
+3. Get Object by ID: `sui client object <ID>`
+4. View Package: `sui client object <PACKAGE_ID>`
 
-## 🔐 Setting Up Test Environment
+## Setting Up Test Environment
 
 ```bash
 # Set active address
@@ -203,18 +195,16 @@ sui client gas --json
 sui client addresses
 ```
 
-## 📚 Next Steps
+## Next Steps
 
-1. **Deploy to Devnet**: Change to devnet environment
+1. Deploy to Devnet: Change to devnet environment
    ```bash
-   sui client env
    sui client switch --env devnet
    ```
 
-2. **Deploy to Mainnet**: Change to mainnet (USE CAUTION!)
+2. Deploy to Mainnet: Change to mainnet (USE CAUTION!)
    ```bash
    sui client switch --env mainnet
    ```
 
-3. **Create Integration Tests**: Write Move unit tests in `tests/` directory
-
+3. Create Integration Tests: Write Move unit tests in tests/ directory

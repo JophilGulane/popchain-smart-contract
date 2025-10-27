@@ -27,7 +27,7 @@ popchain/
 
 Manages user accounts with role-based access (Attendee, Organizer, or Both).
 
-**Key Features:**
+Key Features:
 - Create PopChain accounts with linked wallet addresses
 - Role-based permissions (organizer, attendee, or both)
 - Balance management via Coin<SUI>
@@ -37,16 +37,16 @@ Manages user accounts with role-based access (Attendee, Organizer, or Both).
 
 Handles all fund and payment operations.
 
-**Key Functions:**
-- `deposit()` - Add funds to account
-- `withdraw()` - Withdraw funds from account
-- `charge_platform_fee()` - Deduct fees for platform operations
+Key Functions:
+- deposit() - Add funds to account
+- withdraw() - Withdraw funds from account
+- charge_platform_fee() - Deduct fees for platform operations
 
 ### 3. popchain_event.move
 
 Event creation and whitelist management.
 
-**Key Features:**
+Key Features:
 - Create events with tiered certificate structures
 - Add/remove attendees from whitelist
 - Track event status (active/closed)
@@ -56,17 +56,17 @@ Event creation and whitelist management.
 
 NFT certificate creation with 4 default tiers.
 
-**Default Tiers:**
-1. **PopPass** - Proof of attendance
-2. **PopBadge** - Activity/Side quest completion
-3. **PopMedal** - Recognition/Distinction
-4. **PopTrophy** - VIP/Sponsor honor
+Default Tiers:
+1. PopPass - Proof of attendance
+2. PopBadge - Activity/Side quest completion
+3. PopMedal - Recognition/Distinction
+4. PopTrophy - VIP/Sponsor honor
 
 ### 5. popchain_admin.move
 
 Platform treasury and fee management.
 
-**Key Features:**
+Key Features:
 - Initialize platform with configurable fees
 - Deposit accumulated fees
 - Withdraw funds to platform owner
@@ -84,7 +84,7 @@ Standardized error codes for all operations.
 
 ### 1. Initialize Platform
 ```move
-init_platform(admin, base_fee, event_creation_fee, mint_fee, ctx)
+init_platform(base_fee, event_creation_fee, mint_fee, ctx)
 ```
 
 ### 2. Create User Account
@@ -123,26 +123,36 @@ mint_certificate_for_attendee(
 
 ## Error Codes
 
-- `ENotOrganizer` (1) - User is not an organizer
-- `ENotAttendee` (2) - User is not an attendee
-- `ENotWhitelisted` (3) - Email not on whitelist
-- `EInsufficientFunds` (4) - Insufficient balance
-- `EEventClosed` (5) - Event is closed
-- `EAlreadyClaimed` (6) - Certificate already claimed
-- `EUnauthorized` (7) - Unauthorized action
-- `EInvalidRole` (8) - Invalid user role
-- `EInvalidTier` (9) - Invalid tier index
-- `ENoTiers` (10) - No tiers defined
-- `EEventNotFound` (11) - Event not found
-- `EAccountNotFound` (12) - Account not found
-- `ETreasuryNotFound` (13) - Treasury not found
+- ENotOrganizer (1) - User is not an organizer
+- ENotAttendee (2) - User is not an attendee
+- ENotWhitelisted (3) - Email not on whitelist
+- EInsufficientFunds (4) - Insufficient balance
+- EEventClosed (5) - Event is closed
+- EAlreadyClaimed (6) - Certificate already claimed
+- EUnauthorized (7) - Unauthorized action
+- EInvalidRole (8) - Invalid user role
+- EInvalidTier (9) - Invalid tier index
+- ENoTiers (10) - No tiers defined
+- EEventNotFound (11) - Event not found
+- EAccountNotFound (12) - Account not found
+- ETreasuryNotFound (13) - Treasury not found
 
 ## Fee Structure
 
 The platform charges:
-- **Event Creation Fee** - Paid by organizer when creating an event
-- **Certificate Minting Fee** - Paid by organizer per certificate minted
+- Event Creation Fee - Paid by organizer when creating an event
+- Certificate Minting Fee - Paid by organizer per certificate minted
 - All fees are accumulated in the PlatformTreasury
+
+## Deployment
+
+This contract is deployed on Sui Testnet.
+
+Package ID: 0xe78838a1ac4fbb3fa00fd6dc9bfbbc7d3e6b6c044725e4deaafd201c98d4bb7c
+
+Transaction: https://suiexplorer.com/txblock/A7FpgbLZPn9SfeaRMRMvw8ZXr5JsK4Vsin1inVKdq43G?network=testnet
+
+See TEST_REPORT.md for complete test results.
 
 ## Development
 
@@ -154,7 +164,14 @@ sui move build
 sui move test
 ```
 
+## Documentation
+
+- TEST_REPORT.md - Complete test results and function verification
+- QUICK_START.md - Quick start guide for testing
+- TESTING_GUIDE.md - Detailed testing guide
+- HOW_TO_PUBLISH.md - Publishing instructions
+- PUBLISHED_CONTRACT_INFO.md - Published contract details
+
 ## License
 
 MIT
-

@@ -1,66 +1,40 @@
-# 🚀 PopChain Quick Start Guide
+# PopChain Quick Start Guide
 
 ## Prerequisites
 
-- [x] Sui CLI installed (✅ you have it: `sui 1.59.0`)
-- [ ] Node.js installed (optional, for TS test script)
-- [ ] Basic understanding of Sui Move
+- Sui CLI installed
+- Active Sui client
+- Testnet access
 
-## Step 1: Initialize Sui Client
-
-```bash
-# Create a new Sui address for testing
-sui client new-address ed25519
-
-# Or if you already have addresses, check them:
-sui client addresses
-```
-
-## Step 2: Start Local Validator
-
-Start a local Sui network for testing:
+## Step 1: Build Your Contract
 
 ```bash
-# Start local validator
-sui-test-validator
-
-# Keep this running in a separate terminal!
-# It will provide:
-# - Local blockchain
-# - Test faucet
-# - RPC endpoint at http://127.0.0.1:9000
-```
-
-## Step 3: Build Your Contract
-
-```bash
-# Already built! ✅ Check build directory
+# Build the Move package
 sui move build
-
-# Should see: "Successfully verified modules"
 ```
 
-## Step 4: Publish to Local Network
+You should see: "Successfully verified modules"
+
+## Step 2: Publish Your Contract to Testnet
 
 ```bash
+# Switch to testnet
+sui client switch --env testnet
+
+# Get test tokens
+sui client faucet
+
 # Publish your contract
 sui client publish --gas-budget 100000000
 
-# You'll get output like:
-# Package ID: 0x123abc...
-# Created: { ... }
-# Changed: { ... }
-
-# Save the Package ID for testing!
+# Save the Package ID from the output!
 ```
 
-## Step 5: Test Your Functions
-
-### Initialize Platform
+## Step 3: Initialize Platform
 
 ```bash
-# Get your package ID from step 4
-export PACKAGE_ID="0xYOUR_PACKAGE_ID"
+# Set your package ID
+export PACKAGE_ID="0xe78838a1ac4fbb3fa00fd6dc9bfbbc7d3e6b6c044725e4deaafd201c98d4bb7c"
 
 # Initialize the PopChain platform
 sui client call \
@@ -76,9 +50,9 @@ sui client call \
 # - Mint fee: 2000
 ```
 
-**Save the Treasury Object ID** from the output!
+Save the Treasury Object ID from the output.
 
-### Create a User Account
+## Step 4: Create a User Account
 
 ```bash
 # Get your active address
@@ -96,9 +70,27 @@ sui client call \
 # user_type: 0=Attendee, 1=Organizer, 2=Both
 ```
 
-**Save the Account Object ID** from the output!
+Save the Account Object ID from the output.
 
-### Create Event
+## Step 5: Deposit Funds to Account
+
+```bash
+# First, get a coin object
+sui client gas
+
+# Split a coin for deposit
+sui client split-coin --coin-id <COIN_ID> --amounts 100000000
+
+# Deposit to account
+sui client call \
+  --package $PACKAGE_ID \
+  --module popchain_wallet \
+  --function deposit \
+  --args "<ACCOUNT_ID>" "<COIN_ID>" \
+  --gas-budget 100000000
+```
+
+## Step 6: Create an Event
 
 ```bash
 export TREASURY_ID="<your_treasury_object_id>"
@@ -113,9 +105,9 @@ sui client call \
   --gas-budget 100000000
 ```
 
-**Save the Event Object ID** from the output!
+Save the Event Object ID from the output.
 
-### Add to Whitelist
+## Step 7: Add to Whitelist
 
 ```bash
 export EVENT_ID="<your_event_object_id>"
@@ -129,7 +121,7 @@ sui client call \
   --gas-budget 100000000
 ```
 
-### Mint Certificate
+## Step 8: Mint Certificate
 
 ```bash
 # Mint a certificate for the whitelisted attendee
@@ -166,7 +158,7 @@ sui client transaction <TRANSACTION_DIGEST> --json
 
 ## Complete Testing Workflow
 
-Save these as `test-all.sh`:
+Save these as test-all.sh:
 
 ```bash
 #!/bin/bash
@@ -174,15 +166,23 @@ Save these as `test-all.sh`:
 # Set your package ID after publishing
 export PACKAGE_ID="<YOUR_PACKAGE_ID>"
 
-echo "🧪 Testing PopChain Complete Workflow"
-echo "====================================="
+echo "Testing PopChain Complete Workflow"
+echo "==================================="
 
 # 1. Initialize
-echo "1️⃣ Initializing platform..."
+echo "1. Initializing platform..."
 sui client call --package $PACKAGE_ID --module popchain_admin --function init_platform \
   --args 1000 5000 2000 --gas-budget 100000000
 
-echo "📋 Check output for TREASURY_ID and save it!"
+echo "Check output for TREASURY_ID and save it!"
+
+# 2. Create account
+echo "2. Creating organizer account..."
+EMAIL_HASH="0x1234567890abcdef"
+sui client call --package $PACKAGE_ID --module popchain_user --function create_account \
+  --args $EMAIL_HASH "1" "$(sui client active-address | head -n 1)" --gas-budget 100000000
+
+echo "Test complete!"
 ```
 
 ## Troubleshooting
@@ -201,18 +201,16 @@ sui client new-address ed25519
 
 ### "Package not found"
 - Make sure you copied the correct Package ID from publishing step
-- Verify local validator is running
+- Verify testnet connection is working
 
 ## Next Steps
 
-1. ✅ Build contract
-2. ⬜ Deploy to local network
-3. ⬜ Test initialization
-4. ⬜ Test user creation
-5. ⬜ Test event creation
-6. ⬜ Test certificate minting
-7. ⬜ Deploy to devnet
-8. ⬜ Deploy to mainnet (final step)
+1. Build contract
+2. Deploy to testnet
+3. Test initialization
+4. Test user creation
+5. Test event creation
+6. Test certificate minting
+7. Deploy to mainnet (final step)
 
-For detailed function documentation, see: **TESTING_GUIDE.md**
-
+For detailed function documentation, see: TESTING_GUIDE.md

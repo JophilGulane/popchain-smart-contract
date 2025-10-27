@@ -1,8 +1,8 @@
-# 🎉 Your PopChain Contract is Published!
+# PopChain Contract Published Information
 
 ## Package Information
 
-**Package ID:** `0xe78838a1ac4fbb3fa00fd6dc9bfbbc7d3e6b6c044725e4deaafd201c98d4bb7c`
+**Package ID:** 0xe78838a1ac4fbb3fa00fd6dc9bfbbc7d3e6b6c044725e4deaafd201c98d4bb7c
 
 **Network:** Sui Testnet
 
@@ -10,30 +10,25 @@
 
 ---
 
-## What's Deployed
+## Modules Deployed
 
-Your package includes these modules:
-- ✅ `popchain_admin` - Platform treasury and fees
-- ✅ `popchain_certificate` - NFT certificates
-- ✅ `popchain_errors` - Error codes
-- ✅ `popchain_event` - Event management
-- ✅ `popchain_user` - User accounts
-- ✅ `popchain_utils` - Utilities
-- ✅ `popchain_wallet` - Fund management
+- popchain_admin - Platform treasury and fees
+- popchain_certificate - NFT certificates
+- popchain_errors - Error codes
+- popchain_event - Event management
+- popchain_user - User accounts
+- popchain_utils - Utilities
+- popchain_wallet - Fund management
 
 ---
 
 ## Next Steps: Test Your Contract
 
-Now you can test your deployed contract! Here's how to start:
-
 ### 1. Initialize the Platform
 
 ```powershell
-# Save the package ID
 $PACKAGE_ID = "0xe78838a1ac4fbb3fa00fd6dc9bfbbc7d3e6b6c044725e4deaafd201c98d4bb7c"
 
-# Initialize the platform
 sui client call `
   --package $PACKAGE_ID `
   --module popchain_admin `
@@ -42,7 +37,7 @@ sui client call `
   --gas-budget 100000000
 ```
 
-**Note:** This will create a `PlatformTreasury` object. Copy the Treasury ID from the output!
+**Note:** This creates a PlatformTreasury object. Copy the Treasury ID from the output.
 
 ---
 
@@ -57,10 +52,8 @@ sui client active-address
 ### 3. Create a User Account
 
 ```powershell
-# Get your address
 $ADDRESS = sui client active-address
 
-# Create an organizer account
 sui client call `
   --package $PACKAGE_ID `
   --module popchain_user `
@@ -79,10 +72,8 @@ Replace `<TREASURY_ID>` with the ID from step 1:
 
 ```powershell
 $TREASURY_ID = "<YOUR_TREASURY_ID>"
-# Get account ID from step 3 output
 $ACCOUNT_ID = "<YOUR_ACCOUNT_ID>"
 
-# Create event
 sui client call `
   --package $PACKAGE_ID `
   --module popchain_event `
@@ -115,12 +106,11 @@ sui client object 0xe78838a1ac4fbb3fa00fd6dc9bfbbc7d3e6b6c044725e4deaafd201c98d4
 
 ## Explorer Links
 
-- **Transaction:** https://suiexplorer.com/txblock/A7FpgbLZPn9SfeaRMRMvw8ZXr5JsK4Vsin1inVKdq43G?network=testnet
-- **Package:** https://suiexplorer.com/object/0xe78838a1ac4fbb3fa00fd6dc9bfbbc7d3e6b6c044725e4deaafd201c98d4bb7c?network=testnet
+- Transaction: https://suiexplorer.com/txblock/A7FpgbLZPn9SfeaRMRMvw8ZXr5JsK4Vsin1inVKdq43G?network=testnet
+- Package: https://suiexplorer.com/object/0xe78838a1ac4fbb3fa00fd6dc9bfbbc7d3e6b6c044725e4deaafd201c98d4bb7c?network=testnet
 
 ---
 
 ## Complete Testing Guide
 
-See **QUICK_START.md** for full testing workflow!
-
+See QUICK_START.md for full testing workflow.
