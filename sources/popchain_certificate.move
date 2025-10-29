@@ -1,6 +1,7 @@
 module popchain::popchain_certificate;
 
 use sui::object::{Self, ID, UID};
+use sui::url::{Self, Url, new_unsafe_from_bytes};
 use sui::event;
 use std::string;
 use sui::transfer;
@@ -11,7 +12,7 @@ use sui::tx_context::{TxContext, Self};
 public struct Tier has copy, drop, store {
     name: string::String,
     description: string::String,
-    metadata_url: string::String,
+    url: Url
 }
 
 /// NFT Certificate
@@ -19,7 +20,8 @@ public struct CertificateNFT has key, store {
     id: UID,
     event_id: ID,
     tier_name: string::String,
-    metadata_url: string::String,
+    url: Url,
+    tier_url: Url,
     issued_to: address,
     issued_at: u64,
 }
@@ -33,25 +35,25 @@ public fun default_popchain_tiers(ctx: &mut TxContext): vector<Tier> {
     vector::push_back(&mut tiers, Tier {
         name: string::utf8(b"PopPass"),
         description: string::utf8(b"Proof of attendance certificate"),
-        metadata_url: string::utf8(b"https://ipfs.io/ipfs/popchain/pop_pass.json"),
+        url: new_unsafe_from_bytes(b"https://www.shutterstock.com/shutterstock/photos/2247393295/display_1500/stock-vector--d-cinema-movie-ticket-with-minimal-film-theater-play-icon-ready-for-watch-movie-in-theatre-media-2247393295.jpg")
     });
     
     vector::push_back(&mut tiers, Tier {
         name: string::utf8(b"PopBadge"),
         description: string::utf8(b"Achievement or side quest badge"),
-        metadata_url: string::utf8(b"https://ipfs.io/ipfs/popchain/pop_badge.json"),
+        url: new_unsafe_from_bytes(b"https://www.shutterstock.com/shutterstock/photos/2458615663/display_1500/stock-vector-american-shield-icon-silhouette-illustration-united-states-vector-graphic-pictogram-symbol-clip-2458615663.jpg"),
     });
     
     vector::push_back(&mut tiers, Tier {
         name: string::utf8(b"PopMedal"),
         description: string::utf8(b"Recognition or distinction award"),
-        metadata_url: string::utf8(b"https://ipfs.io/ipfs/popchain/pop_medal.json"),
+        url: new_unsafe_from_bytes(b"https://www.shutterstock.com/shutterstock/photos/2370504913/display_1500/stock-vector-gold-medals-awards-medal-champions-medal-champion-winner-award-medal-gold-trophy-2370504913.jpg"),
     });
     
     vector::push_back(&mut tiers, Tier {
         name: string::utf8(b"PopTrophy"),
         description: string::utf8(b"VIP or sponsor honor NFT"),
-        metadata_url: string::utf8(b"https://ipfs.io/ipfs/popchain/pop_trophy.json"),
+        url: new_unsafe_from_bytes(b"https://www.shutterstock.com/shutterstock/photos/2328657241/display_1500/stock-vector-champion-holds-a-trophy-cup-in-his-hand-prize-winner-victory-celebration-concept-vector-2328657241.jpg"),
     });
     
     tiers
@@ -62,6 +64,7 @@ public fun default_popchain_tiers(ctx: &mut TxContext): vector<Tier> {
 /// Mint a certificate NFT for an attendee
 public fun mint_certificate(
     event_id: ID,
+    url: Url,
     tier: Tier,
     attendee: address,
     ctx: &mut TxContext
@@ -72,7 +75,8 @@ public fun mint_certificate(
         id: object::new(ctx),
         event_id,
         tier_name: tier.name,
-        metadata_url: tier.metadata_url,
+        url: url,
+        tier_url: tier.url,
         issued_to: attendee,
         issued_at: now,
     };
@@ -104,8 +108,8 @@ public fun get_tier_name(cert: &CertificateNFT): string::String {
 }
 
 /// Get certificate metadata URL
-public fun get_metadata_url(cert: &CertificateNFT): string::String {
-    cert.metadata_url
+public fun get_metadata_url(cert: &CertificateNFT): Url {
+    cert.url
 }
 
 /// Get certificate recipient
