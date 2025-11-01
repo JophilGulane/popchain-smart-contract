@@ -2,6 +2,7 @@ module popchain::popchain_event;
 
 use sui::table::{Self, Table};
 use sui::object::{Self, ID, UID};
+use sui::url::{Self, Url, new_unsafe_from_bytes};
 use sui::event;
 use std::string;
 use sui::transfer;
@@ -140,7 +141,8 @@ public entry fun close_event(
 public entry fun mint_certificate_for_attendee(
     event: &mut Event,
     organizer_account: &mut PopChainAccount,
-    attendee_email_hash: vector<u8>,
+    attendee_account: &mut PopChainAccount,
+    certificate_url_hash: vector<u8>,
     tier_index: u64,
     treasury: &mut PlatformTreasury,
     ctx: &mut TxContext
@@ -152,6 +154,10 @@ public entry fun mint_certificate_for_attendee(
     let sender = tx_context::sender(ctx);
     assert!(is_organizer(organizer_account), popchain_errors::e_not_organizer());
     assert!(sender == event.organizer, popchain_errors::e_unauthorized());
+
+    // Get attendee details
+    let attendee = popchain_user::get_owner(attendee_account);
+    let attendee_email_hash = popchain_user::get_email_hash(attendee_account);
     
     // Verify attendee is whitelisted
     assert!(is_whitelisted(event, attendee_email_hash), popchain_errors::e_not_whitelisted());
@@ -172,8 +178,9 @@ public entry fun mint_certificate_for_attendee(
     // Mint certificate to organizer's account (they can transfer to attendee)
     let cert_id = popchain_certificate::mint_certificate(
         object::id(event),
+        new_unsafe_from_bytes(certificate_url_hash),
         tier,
-        sender,
+        attendee,
         ctx
     );
     

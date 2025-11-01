@@ -129,10 +129,10 @@ sui client call \
   --package $PACKAGE_ID \
   --module popchain_event \
   --function mint_certificate_for_attendee \
-  --args $EVENT_ID $ACCOUNT_ID "0xabcdef1234567890" "0" $TREASURY_ID \
+  --args $EVENT_ID $ORGANIZER_ACCOUNT_ID $ATTENDEE_ACCOUNT_ID $CERT_URL "0" $TREASURY_ID \
   --gas-budget 100000000
 
-# Args: event account email_hash tier_index treasury
+# Args: event organizer_account attendee_account certificate_url tier_index treasury
 # tier_index: 0-3 (PopPass, PopBadge, PopMedal, PopTrophy)
 ```
 
