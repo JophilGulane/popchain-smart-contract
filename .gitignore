@@ -1,9 +1,3 @@
 /build
 /deploy
 /docs
-
-# Test results and temporary files
-test_results*.json
-*.test.json
-*.log
-*.tmp
