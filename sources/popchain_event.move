@@ -156,7 +156,6 @@ public entry fun mint_certificate_for_attendee(
     assert!(sender == event.organizer, popchain_errors::e_unauthorized());
 
     // Get attendee details
-    let attendee = popchain_user::get_owner(attendee_account);
     let attendee_email_hash = popchain_user::get_email_hash(attendee_account);
     
     // Verify attendee is whitelisted
@@ -175,17 +174,16 @@ public entry fun mint_certificate_for_attendee(
     // Remove from whitelist (prevent duplicate claims)
     table::remove(&mut event.whitelist, attendee_email_hash);
     
-    // Mint certificate to organizer's account (they can transfer to attendee)
+    // Mint certificate to attendee's account
+    // The certificate will be transferred to attendee's wallet if they have one (owner_address != 0x0)
+    // Otherwise, it will be associated with their account but transferred to null address
     let cert_id = popchain_certificate::mint_certificate(
         object::id(event),
         new_unsafe_from_bytes(certificate_url_hash),
         tier,
-        attendee,
+        attendee_account,
         ctx
     );
-    
-    // Note: In a real implementation, you'd transfer the certificate
-    // to the actual attendee address, not the organizer
     
     event::emit(CertificateMintedToAttendee {
         event_id: object::id(event),

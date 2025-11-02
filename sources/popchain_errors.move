@@ -15,6 +15,7 @@ const ENoTiers: u64 = 10;
 const EEventNotFound: u64 = 11;
 const EAccountNotFound: u64 = 12;
 const ETreasuryNotFound: u64 = 13;
+const EInvalidAddress: u64 = 14;
 
 // ============ Public Getters ============
 
@@ -31,4 +32,5 @@ public fun e_no_tiers(): u64 { ENoTiers }
 public fun e_event_not_found(): u64 { EEventNotFound }
 public fun e_account_not_found(): u64 { EAccountNotFound }
 public fun e_treasury_not_found(): u64 { ETreasuryNotFound }
+public fun e_invalid_address(): u64 { EInvalidAddress }
 

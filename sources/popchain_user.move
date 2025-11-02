@@ -147,6 +147,31 @@ public fun split_balance(account: &mut PopChainAccount, amount: u64, ctx: &mut T
     coin::split(&mut account.balance, amount, ctx)
 }
 
+// ============ Wallet Management ============
+
+/// Link a wallet address to an existing account
+/// Allows an attendee to connect their wallet address to their account
+/// The new wallet address must not be the null address (@0x0)
+public entry fun link_wallet(
+    account: &mut PopChainAccount,
+    wallet_address: address,
+    _ctx: &mut TxContext
+) {
+    // Prevent linking to null address
+    assert!(wallet_address != @0x0, popchain_errors::e_invalid_address());
+    
+    let old_address = account.owner_address;
+    
+    // Update the owner address
+    account.owner_address = wallet_address;
+    
+    event::emit(WalletLinked {
+        account_id: object::id(account),
+        old_address,
+        new_address: wallet_address,
+    });
+}
+
 // ============ Events ============
 
 /// Event emitted when an account is created
@@ -154,5 +179,12 @@ public struct CreatedAccount has copy, drop {
     owner: address,
     owner_address: address,
     role: u8,
+}
+
+/// Event emitted when a wallet is linked to an account
+public struct WalletLinked has copy, drop {
+    account_id: ID,
+    old_address: address,
+    new_address: address,
 }
 
