@@ -104,21 +104,42 @@ create_event_with_default_tiers(account, name, description, treasury, ctx)
 create_event(account, name, description, custom_tiers, treasury, ctx)
 ```
 
-### 5. Add to Whitelist
+### 5. Link Wallet
+```move
+link_wallet(account, wallet_address, ctx)
+```
+
+### 6. Add to Whitelist
 ```move
 add_to_whitelist(event, email_hash, ctx)
 ```
 
-### 6. Mint Certificate
+### 7. Mint Certificate
 ```move
 mint_certificate_for_attendee(
     event,
     organizer_account,
-    attendee_email_hash,
+    attendee_account,
+    certificate_url_hash,
     tier_index,
     treasury,
     ctx
 )
+```
+
+### 8. Transfer Certificate to Wallet
+```move
+transfer_certificate_to_wallet(account, certificate, ctx)
+```
+
+### 9. Withdraw Funds
+```move
+withdraw(account, amount, ctx)
+```
+
+### 10. Admin: Withdraw from Treasury
+```move
+withdraw_to_owner(treasury, amount, ctx)
 ```
 
 ## Error Codes
@@ -136,6 +157,7 @@ mint_certificate_for_attendee(
 - EEventNotFound (11) - Event not found
 - EAccountNotFound (12) - Account not found
 - ETreasuryNotFound (13) - Treasury not found
+- EInvalidAddress (14) - Invalid wallet address (e.g., 0x0 when not allowed)
 
 ## Fee Structure
 
@@ -144,33 +166,20 @@ The platform charges:
 - Certificate Minting Fee - Paid by organizer per certificate minted
 - All fees are accumulated in the PlatformTreasury
 
-## Deployment
-
-This contract is deployed on Sui Testnet.
-
-Package ID: 0xe78838a1ac4fbb3fa00fd6dc9bfbbc7d3e6b6c044725e4deaafd201c98d4bb7c
-
-Transaction: https://suiexplorer.com/txblock/A7FpgbLZPn9SfeaRMRMvw8ZXr5JsK4Vsin1inVKdq43G?network=testnet
-
-See TEST_REPORT.md for complete test results.
-
 ## Development
 
-To build and test the smart contract:
+To build the smart contract:
 
 ```bash
-cd popchain
 sui move build
-sui move test
 ```
 
-## Documentation
+To test the contract functions:
 
-- TEST_REPORT.md - Complete test results and function verification
-- QUICK_START.md - Quick start guide for testing
-- TESTING_GUIDE.md - Detailed testing guide
-- HOW_TO_PUBLISH.md - Publishing instructions
-- PUBLISHED_CONTRACT_INFO.md - Published contract details
+```bash
+# See TESTING_GUIDE.md for complete testing instructions
+sui client call --package <PACKAGE_ID> --module <MODULE> --function <FUNCTION> --args <ARGS> --gas-budget 100000000
+```
 
 ## License
 

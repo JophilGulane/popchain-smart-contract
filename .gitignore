@@ -1,2 +1,10 @@
 /build
 /deploy
+/scripts
+/docs
+
+# Test results and temporary files
+test_results*.json
+*.test.json
+*.log
+*.tmp
