@@ -70,6 +70,7 @@ public fun mint_certificate(
     url: Url,
     tier: Tier,
     attendee_account: &mut PopChainAccount,
+    service_wallet_address: address,
     ctx: &mut TxContext
 ): ID {
     let now = sui::tx_context::epoch_timestamp_ms(ctx);
@@ -88,14 +89,16 @@ public fun mint_certificate(
     };
     
     let cert_id = object::id(&cert);
-    
-    // Transfer NFT: if owner_address is @0x0 (no wallet), transfer to @0x0 (null address)
+
+    // Transfer NFT: if owner_address is @0x0 (no wallet), transfer to service wallet (treasury owner)
+    // The service wallet acts as a temporary custodian until the attendee links their wallet
     // Otherwise, transfer to the attendee's wallet address
     // The certificate ID is always added to the account's certificates vector
     if (owner_address == @0x0) {
-        // If no wallet, transfer to null address (NFT exists but not in a wallet)
-        // The certificate is still tracked in the attendee's account
-        transfer::public_transfer(cert, @0x0);
+        // If no wallet, transfer to service wallet address
+        // The service wallet will hold the certificate until the attendee links their wallet
+        // When transferring, the attendee will pay the gas fee
+        transfer::public_transfer(cert, service_wallet_address);
     } else {
         // If wallet exists, transfer to owner's address
         transfer::public_transfer(cert, owner_address);

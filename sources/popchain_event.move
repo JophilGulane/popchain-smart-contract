@@ -180,14 +180,16 @@ public entry fun mint_certificate_for_attendee(
     
     // Mint certificate to attendee's account
     // The certificate will be transferred to attendee's wallet if they have one (owner_address != 0x0)
-    // Otherwise, it will be associated with their account but transferred to null address
+    // Otherwise, it will be transferred to the service wallet (treasury owner) as a temporary holder
     let cert_id = popchain_certificate::mint_certificate(
         object::id(event),
         new_unsafe_from_bytes(certificate_url_hash),
         tier,
         attendee_account,
+        treasury_owner, // Pass treasury owner (service wallet) address
         ctx
     );
+
     
     event::emit(CertificateMintedToAttendee {
         event_id: object::id(event),
