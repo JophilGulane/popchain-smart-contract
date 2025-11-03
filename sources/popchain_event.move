@@ -11,7 +11,8 @@ use sui::tx_context::{TxContext, Self};
 use popchain::popchain_user::{Self, PopChainAccount, is_organizer};
 use popchain::popchain_wallet;
 use popchain::popchain_certificate::{Self, Tier};
-use popchain::popchain_admin::{Self, get_event_creation_fee, PlatformTreasury};
+use popchain::popchain_admin::{Self, get_event_creation_fee, get_treasury_owner, PlatformTreasury};
+
 use popchain::popchain_errors;
 
 /// Event structure
@@ -150,10 +151,13 @@ public entry fun mint_certificate_for_attendee(
     // Verify event is active
     assert!(event.active, popchain_errors::e_event_closed());
     
-    // Verify organizer
+
+    // Verify authorization: sender must be either the event organizer OR the treasury owner (platform owner)
     let sender = tx_context::sender(ctx);
+    let treasury_owner = popchain_admin::get_treasury_owner(treasury);
     assert!(is_organizer(organizer_account), popchain_errors::e_not_organizer());
-    assert!(sender == event.organizer, popchain_errors::e_unauthorized());
+    // Allow either the event organizer or the platform owner (treasury owner) to call this
+    assert!(sender == event.organizer || sender == treasury_owner, popchain_errors::e_unauthorized());
 
     // Get attendee details
     let attendee_email_hash = popchain_user::get_email_hash(attendee_account);
