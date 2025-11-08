@@ -9,11 +9,12 @@ use std::vector;
 use sui::tx_context::{TxContext, Self};
 use popchain::popchain_user::{Self, PopChainAccount};
 
-/// Certificate tier structure
+/// Certificate tier structure with PRICE
 public struct Tier has copy, drop, store {
     name: string::String,
     description: string::String,
-    url: Url
+    url: Url,
+    price: u64,  // NEW: Each tier has its own price!
 }
 
 /// NFT Certificate
@@ -25,46 +26,122 @@ public struct CertificateNFT has key, store {
     tier_url: Url,
     issued_to: address,
     issued_at: u64,
+    mint_price: u64,  // NEW: Record how much was paid
 }
 
-// ============ Default Tiers ============
+// ============ Tier Creation Functions ============
 
-/// Generate default PopChain tiers
+/// Create a custom tier with price
+public fun create_tier(
+    name: string::String,
+    description: string::String,
+    url: Url,
+    price: u64,
+): Tier {
+    Tier {
+        name,
+        description,
+        url,
+        price,
+    }
+}
+
+/// Create a tier from raw bytes
+/// This is an entry function and can be called directly from transactions
+public entry fun create_tier_from_bytes(
+    name: vector<u8>,
+    description: vector<u8>,
+    url: vector<u8>,
+    price: u64,
+): Tier {
+    Tier {
+        name: string::utf8(name),
+        description: string::utf8(description),
+        url: new_unsafe_from_bytes(url),
+        price,
+    }
+}
+
+// ============ Default Tier Templates ============
+
+/// Generate default PopChain tiers with prices
 public fun default_popchain_tiers(ctx: &mut TxContext): vector<Tier> {
     let mut tiers = vector::empty<Tier>();
     
+    // Tier 0: PopPass (0.1 SUI)
     vector::push_back(&mut tiers, Tier {
         name: string::utf8(b"PopPass"),
         description: string::utf8(b"Proof of attendance certificate"),
-        url: new_unsafe_from_bytes(b"https://ktummovckegufdsuiikr.supabase.co/storage/v1/object/public/tiers/pop_pass.png")
+        url: new_unsafe_from_bytes(b"https://ktummovckegufdsuiikr.supabase.co/storage/v1/object/public/tiers/pop_pass.png"),
+        price: 100_000_000,  // 0.1 SUIC
     });
     
+    // Tier 1: PopBadge (0.3 SUI)
     vector::push_back(&mut tiers, Tier {
         name: string::utf8(b"PopBadge"),
         description: string::utf8(b"Achievement or side quest badge"),
         url: new_unsafe_from_bytes(b"https://ktummovckegufdsuiikr.supabase.co/storage/v1/object/public/tiers/pop_badge.png"),
+        price: 300_000_000,  // 0.3 SUI
     });
     
+    // Tier 2: PopMedal (0.5 SUI)
     vector::push_back(&mut tiers, Tier {
         name: string::utf8(b"PopMedal"),
         description: string::utf8(b"Recognition or distinction award"),
         url: new_unsafe_from_bytes(b"https://ktummovckegufdsuiikr.supabase.co/storage/v1/object/public/tiers/pop_medal.png"),
+        price: 500_000_000,  // 0.5 SUI
     });
     
+    // Tier 3: PopTrophy (0.7 SUI)
     vector::push_back(&mut tiers, Tier {
         name: string::utf8(b"PopTrophy"),
         description: string::utf8(b"VIP or sponsor honor NFT"),
         url: new_unsafe_from_bytes(b"https://ktummovckegufdsuiikr.supabase.co/storage/v1/object/public/tiers/pop_trophy.png"),
+        price: 700_000_000,  // 0.7 SUI
     });
     
     tiers
 }
 
+/// Create custom tiers with specific prices
+public fun create_custom_tiers(
+    names: vector<vector<u8>>,
+    descriptions: vector<vector<u8>>,
+    urls: vector<vector<u8>>,
+    prices: vector<u64>,
+): vector<Tier> {
+    let mut tiers = vector::empty<Tier>();
+    let len = vector::length(&names);
+    let mut i = 0;
+    
+    while (i < len) {
+        vector::push_back(&mut tiers, Tier {
+            name: string::utf8(*vector::borrow(&names, i)),
+            description: string::utf8(*vector::borrow(&descriptions, i)),
+            url: new_unsafe_from_bytes(*vector::borrow(&urls, i)),
+            price: *vector::borrow(&prices, i),
+        });
+        i = i + 1;
+    };
+    
+    tiers
+}
+
+// ============ Tier Getters ============
+
+/// Get tier price
+public fun get_tier_price(tier: &Tier): u64 {
+    tier.price
+}
+
+/// Get tier name
+public fun get_tier_name(tier: &Tier): string::String {
+    tier.name
+}
+
 // ============ Certificate Minting ============
 
-/// Mint a certificate NFT to an attendee's account
-/// If the attendee has no wallet (owner_address = 0x0), the NFT is transferred to the account object.
-/// Otherwise, it's transferred to the attendee's wallet address.
+/// Mint a certificate NFT with tier price tracking
 public fun mint_certificate(
     event_id: ID,
     url: Url,
@@ -74,8 +151,6 @@ public fun mint_certificate(
     ctx: &mut TxContext
 ): ID {
     let now = sui::tx_context::epoch_timestamp_ms(ctx);
-    
-    // Get the attendee's owner address (may be @0x0 if they don't have a wallet yet)
     let owner_address = popchain_user::get_owner(attendee_account);
     
     let cert = CertificateNFT {
@@ -84,27 +159,19 @@ public fun mint_certificate(
         tier_name: tier.name,
         url: url,
         tier_url: tier.url,
-        issued_to: owner_address, // Record the owner_address (even if @0x0)
+        issued_to: owner_address,
         issued_at: now,
+        mint_price: tier.price,  // Record the price paid
     };
     
     let cert_id = object::id(&cert);
 
-    // Transfer NFT: if owner_address is @0x0 (no wallet), transfer to service wallet (treasury owner)
-    // The service wallet acts as a temporary custodian until the attendee links their wallet
-    // Otherwise, transfer to the attendee's wallet address
-    // The certificate ID is always added to the account's certificates vector
     if (owner_address == @0x0) {
-        // If no wallet, transfer to service wallet address
-        // The service wallet will hold the certificate until the attendee links their wallet
-        // When transferring, the attendee will pay the gas fee
         transfer::public_transfer(cert, service_wallet_address);
     } else {
-        // If wallet exists, transfer to owner's address
         transfer::public_transfer(cert, owner_address);
     };
     
-    // Always add certificate ID to the attendee's account (regardless of wallet status)
     popchain_user::add_certificate(attendee_account, cert_id);
     
     event::emit(CertificateMinted {
@@ -113,53 +180,40 @@ public fun mint_certificate(
         tier_name: tier.name,
         issued_to: owner_address,
         issued_at: now,
+        mint_price: tier.price,
     });
     
     cert_id
 }
 
-// ============ Getters ============
+// ============ Certificate Getters ============
 
-/// Get certificate event ID
 public fun get_event_id(cert: &CertificateNFT): ID {
     cert.event_id
 }
 
-/// Get certificate tier name
-public fun get_tier_name(cert: &CertificateNFT): string::String {
+public fun get_certificate_tier_name(cert: &CertificateNFT): string::String {
     cert.tier_name
 }
 
-/// Get certificate metadata URL
 public fun get_metadata_url(cert: &CertificateNFT): Url {
     cert.url
 }
 
-/// Get certificate recipient
 public fun get_issued_to(cert: &CertificateNFT): address {
     cert.issued_to
 }
 
-/// Get certificate issue timestamp
 public fun get_issued_at(cert: &CertificateNFT): u64 {
     cert.issued_at
 }
 
+public fun get_mint_price(cert: &CertificateNFT): u64 {
+    cert.mint_price
+}
+
 // ============ Certificate Transfer ============
 
-/// Transfer a certificate NFT to the attendee's linked wallet
-/// Requires that the attendee has already linked a wallet (owner_address != @0x0)
-/// 
-/// Note: This function requires the certificate object to be passed by the caller.
-/// The certificate must be currently owned by the caller (their wallet address).
-/// 
-/// If a certificate was minted when owner_address was @0x0 and transferred to @0x0,
-/// it cannot be retrieved and cannot be transferred (it's permanently lost).
-/// 
-/// This function will:
-/// - Verify the certificate is associated with the account
-/// - Transfer it to the wallet address (if not already there)
-/// - Emit a transfer event
 public entry fun transfer_certificate_to_wallet(
     account: &mut PopChainAccount,
     certificate: CertificateNFT,
@@ -167,11 +221,9 @@ public entry fun transfer_certificate_to_wallet(
 ) {
     use popchain::popchain_errors;
     
-    // Verify that a wallet is linked
     let owner_address = popchain_user::get_owner(account);
     assert!(owner_address != @0x0, popchain_errors::e_invalid_address());
     
-    // Verify the certificate was issued to this account (or was at @0x0)
     let cert_issued_to = certificate.issued_to;
     assert!(
         cert_issued_to == @0x0 || cert_issued_to == owner_address,
@@ -179,8 +231,6 @@ public entry fun transfer_certificate_to_wallet(
     );
     
     let cert_id = object::id(&certificate);
-    
-    // Verify the certificate is in the account's certificate list
     let certificates = popchain_user::get_certificates(account);
     let mut found = false;
     let mut i = 0;
@@ -194,12 +244,8 @@ public entry fun transfer_certificate_to_wallet(
     };
     assert!(found, popchain_errors::e_unauthorized());
     
-    // Transfer the certificate to the wallet address
-    // Note: In Sui, if the certificate is already owned by owner_address, 
-    // transferring to the same address is a no-op but still valid
     transfer::public_transfer(certificate, owner_address);
     
-    // Emit event for the transfer
     event::emit(CertificateTransferredToWallet {
         certificate_id: cert_id,
         account_id: object::id(account),
@@ -215,12 +261,11 @@ public struct CertificateMinted has copy, drop {
     tier_name: string::String,
     issued_to: address,
     issued_at: u64,
+    mint_price: u64,  // NEW
 }
 
-/// Event emitted when a certificate is transferred to a wallet
 public struct CertificateTransferredToWallet has copy, drop {
     certificate_id: ID,
     account_id: ID,
     wallet_address: address,
 }
-

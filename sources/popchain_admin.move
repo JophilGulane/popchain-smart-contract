@@ -8,23 +8,23 @@ use sui::tx_context::{TxContext, Self};
 use sui::object::{Self, UID};
 use popchain::popchain_errors;
 
-/// Platform treasury for accumulated fees
+/// Platform treasury - NO tier fees here, just platform fees
 public struct PlatformTreasury has key {
     id: UID,
     balance: Coin<SUI>,
     owner: address,
     base_fee: u64,
     event_creation_fee: u64,
-    mint_fee: u64,
+    // Platform takes a percentage of each mint (optional)
+    platform_mint_fee_percentage: u64, // e.g., 10 = 10% of mint price
 }
 
 // ============ Initialization ============
 
-/// Initialize the PopChain platform
 public entry fun init_platform(
     base_fee: u64,
     event_creation_fee: u64,
-    mint_fee: u64,
+    platform_mint_fee_percentage: u64,
     ctx: &mut TxContext
 ) {
     let treasury = PlatformTreasury {
@@ -33,7 +33,7 @@ public entry fun init_platform(
         owner: tx_context::sender(ctx),
         base_fee,
         event_creation_fee,
-        mint_fee,
+        platform_mint_fee_percentage,
     };
     
     transfer::share_object(treasury);
@@ -42,28 +42,29 @@ public entry fun init_platform(
         owner: tx_context::sender(ctx),
         base_fee,
         event_creation_fee,
-        mint_fee,
+        platform_mint_fee_percentage,
     });
 }
 
 // ============ Fee Management ============
 
-/// Get base platform fee
 public fun get_base_fee(treasury: &PlatformTreasury): u64 {
     treasury.base_fee
 }
 
-/// Get event creation fee
 public fun get_event_creation_fee(treasury: &PlatformTreasury): u64 {
     treasury.event_creation_fee
 }
 
-/// Get certificate minting fee
-public fun get_mint_fee(treasury: &PlatformTreasury): u64 {
-    treasury.mint_fee
+public fun get_platform_mint_fee_percentage(treasury: &PlatformTreasury): u64 {
+    treasury.platform_mint_fee_percentage
 }
 
-/// Deposit fees to treasury
+/// Calculate platform fee from mint price
+public fun calculate_platform_fee(treasury: &PlatformTreasury, mint_price: u64): u64 {
+    (mint_price * treasury.platform_mint_fee_percentage) / 100
+}
+
 public fun deposit_fees(
     treasury: &mut PlatformTreasury,
     payment: Coin<SUI>,
@@ -78,7 +79,6 @@ public fun deposit_fees(
     });
 }
 
-/// Withdraw funds to owner
 public entry fun withdraw_to_owner(
     treasury: &mut PlatformTreasury,
     amount: u64,
@@ -99,12 +99,10 @@ public entry fun withdraw_to_owner(
     });
 }
 
-/// Get current treasury balance
 public fun get_treasury_balance(treasury: &PlatformTreasury): u64 {
     coin::value(&treasury.balance)
 }
 
-/// Get treasury owner address
 public fun get_treasury_owner(treasury: &PlatformTreasury): address {
     treasury.owner
 }
@@ -115,7 +113,7 @@ public struct PlatformInitialized has copy, drop {
     owner: address,
     base_fee: u64,
     event_creation_fee: u64,
-    mint_fee: u64,
+    platform_mint_fee_percentage: u64,
 }
 
 public struct FeesDeposited has copy, drop {
@@ -127,4 +125,3 @@ public struct FundsWithdrawn has copy, drop {
     amount: u64,
     remaining_balance: u64,
 }
-
