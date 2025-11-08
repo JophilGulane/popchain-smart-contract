@@ -36,25 +36,25 @@ public fun default_popchain_tiers(ctx: &mut TxContext): vector<Tier> {
     vector::push_back(&mut tiers, Tier {
         name: string::utf8(b"PopPass"),
         description: string::utf8(b"Proof of attendance certificate"),
-        url: new_unsafe_from_bytes(b"https://www.shutterstock.com/shutterstock/photos/2247393295/display_1500/stock-vector--d-cinema-movie-ticket-with-minimal-film-theater-play-icon-ready-for-watch-movie-in-theatre-media-2247393295.jpg")
+        url: new_unsafe_from_bytes(b"https://ktummovckegufdsuiikr.supabase.co/storage/v1/object/public/tiers/pop_pass.png")
     });
     
     vector::push_back(&mut tiers, Tier {
         name: string::utf8(b"PopBadge"),
         description: string::utf8(b"Achievement or side quest badge"),
-        url: new_unsafe_from_bytes(b"https://www.shutterstock.com/shutterstock/photos/2458615663/display_1500/stock-vector-american-shield-icon-silhouette-illustration-united-states-vector-graphic-pictogram-symbol-clip-2458615663.jpg"),
+        url: new_unsafe_from_bytes(b"https://ktummovckegufdsuiikr.supabase.co/storage/v1/object/public/tiers/pop_badge.png"),
     });
     
     vector::push_back(&mut tiers, Tier {
         name: string::utf8(b"PopMedal"),
         description: string::utf8(b"Recognition or distinction award"),
-        url: new_unsafe_from_bytes(b"https://www.shutterstock.com/shutterstock/photos/2370504913/display_1500/stock-vector-gold-medals-awards-medal-champions-medal-champion-winner-award-medal-gold-trophy-2370504913.jpg"),
+        url: new_unsafe_from_bytes(b"https://ktummovckegufdsuiikr.supabase.co/storage/v1/object/public/tiers/pop_medal.png"),
     });
     
     vector::push_back(&mut tiers, Tier {
         name: string::utf8(b"PopTrophy"),
         description: string::utf8(b"VIP or sponsor honor NFT"),
-        url: new_unsafe_from_bytes(b"https://www.shutterstock.com/shutterstock/photos/2328657241/display_1500/stock-vector-champion-holds-a-trophy-cup-in-his-hand-prize-winner-victory-celebration-concept-vector-2328657241.jpg"),
+        url: new_unsafe_from_bytes(b"https://ktummovckegufdsuiikr.supabase.co/storage/v1/object/public/tiers/pop_trophy.png"),
     });
     
     tiers
@@ -70,6 +70,7 @@ public fun mint_certificate(
     url: Url,
     tier: Tier,
     attendee_account: &mut PopChainAccount,
+    service_wallet_address: address,
     ctx: &mut TxContext
 ): ID {
     let now = sui::tx_context::epoch_timestamp_ms(ctx);
@@ -88,14 +89,16 @@ public fun mint_certificate(
     };
     
     let cert_id = object::id(&cert);
-    
-    // Transfer NFT: if owner_address is @0x0 (no wallet), transfer to @0x0 (null address)
+
+    // Transfer NFT: if owner_address is @0x0 (no wallet), transfer to service wallet (treasury owner)
+    // The service wallet acts as a temporary custodian until the attendee links their wallet
     // Otherwise, transfer to the attendee's wallet address
     // The certificate ID is always added to the account's certificates vector
     if (owner_address == @0x0) {
-        // If no wallet, transfer to null address (NFT exists but not in a wallet)
-        // The certificate is still tracked in the attendee's account
-        transfer::public_transfer(cert, @0x0);
+        // If no wallet, transfer to service wallet address
+        // The service wallet will hold the certificate until the attendee links their wallet
+        // When transferring, the attendee will pay the gas fee
+        transfer::public_transfer(cert, service_wallet_address);
     } else {
         // If wallet exists, transfer to owner's address
         transfer::public_transfer(cert, owner_address);

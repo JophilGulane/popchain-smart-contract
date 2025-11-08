@@ -104,6 +104,11 @@ public fun get_treasury_balance(treasury: &PlatformTreasury): u64 {
     coin::value(&treasury.balance)
 }
 
+/// Get treasury owner address
+public fun get_treasury_owner(treasury: &PlatformTreasury): address {
+    treasury.owner
+}
+
 // ============ Events ============
 
 public struct PlatformInitialized has copy, drop {

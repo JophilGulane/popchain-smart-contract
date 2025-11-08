@@ -11,7 +11,8 @@ use sui::tx_context::{TxContext, Self};
 use popchain::popchain_user::{Self, PopChainAccount, is_organizer};
 use popchain::popchain_wallet;
 use popchain::popchain_certificate::{Self, Tier};
-use popchain::popchain_admin::{Self, get_event_creation_fee, PlatformTreasury};
+use popchain::popchain_admin::{Self, get_event_creation_fee, get_treasury_owner, PlatformTreasury};
+
 use popchain::popchain_errors;
 
 /// Event structure
@@ -150,10 +151,13 @@ public entry fun mint_certificate_for_attendee(
     // Verify event is active
     assert!(event.active, popchain_errors::e_event_closed());
     
-    // Verify organizer
+
+    // Verify authorization: sender must be either the event organizer OR the treasury owner (platform owner)
     let sender = tx_context::sender(ctx);
+    let treasury_owner = popchain_admin::get_treasury_owner(treasury);
     assert!(is_organizer(organizer_account), popchain_errors::e_not_organizer());
-    assert!(sender == event.organizer, popchain_errors::e_unauthorized());
+    // Allow either the event organizer or the platform owner (treasury owner) to call this
+    assert!(sender == event.organizer || sender == treasury_owner, popchain_errors::e_unauthorized());
 
     // Get attendee details
     let attendee_email_hash = popchain_user::get_email_hash(attendee_account);
@@ -176,14 +180,16 @@ public entry fun mint_certificate_for_attendee(
     
     // Mint certificate to attendee's account
     // The certificate will be transferred to attendee's wallet if they have one (owner_address != 0x0)
-    // Otherwise, it will be associated with their account but transferred to null address
+    // Otherwise, it will be transferred to the service wallet (treasury owner) as a temporary holder
     let cert_id = popchain_certificate::mint_certificate(
         object::id(event),
         new_unsafe_from_bytes(certificate_url_hash),
         tier,
         attendee_account,
+        treasury_owner, // Pass treasury owner (service wallet) address
         ctx
     );
+
     
     event::emit(CertificateMintedToAttendee {
         event_id: object::id(event),
