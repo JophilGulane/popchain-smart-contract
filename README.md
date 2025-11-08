@@ -4,10 +4,10 @@ A decentralized event management and NFT certificate platform built on Sui block
 
 ## Package Information
 
-- **Package ID**: `0xe465d2c1e1973e6031f40278d874572f26300ce069cecaec0d15089ec971aea6`
+- **Package ID**: `0x7adb3bcd45725d722f4c621b752538758f148955b944d3011a55b42c17e7b316`
 - **Network**: Sui Testnet
-- **Published**: Transaction `H7N5wDB6Ewg1MHcXwdChp8TH4XaPSQCrNuQbjE8RYB3y`
-- **SuiScan**: [View on SuiScan](https://suiscan.xyz/testnet/tx/H7N5wDB6Ewg1MHcXwdChp8TH4XaPSQCrNuQbjE8RYB3y)
+- **Published**: Transaction `Du1oXXxef5gR7iNGkuaex2pFU8TKSoiQRgaE8uhGGYAE`
+- **SuiScan**: [View on SuiScan](https://suiscan.xyz/testnet/tx/0x7adb3bcd45725d722f4c621b752538758f148955b944d3011a55b42c17e7b316)
 
 ## Overview
 
