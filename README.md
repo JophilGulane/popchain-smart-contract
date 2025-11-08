@@ -2,6 +2,13 @@
 
 A decentralized event management and NFT certificate platform built on Sui blockchain.
 
+## Package Information
+
+- **Package ID**: `0xe465d2c1e1973e6031f40278d874572f26300ce069cecaec0d15089ec971aea6`
+- **Network**: Sui Testnet
+- **Published**: Transaction `H7N5wDB6Ewg1MHcXwdChp8TH4XaPSQCrNuQbjE8RYB3y`
+- **SuiScan**: [View on SuiScan](https://suiscan.xyz/testnet/tx/H7N5wDB6Ewg1MHcXwdChp8TH4XaPSQCrNuQbjE8RYB3y)
+
 ## Overview
 
 PopChain enables organizers to create events, manage whitelists, and issue tiered NFT certificates to attendees. Each participant (organizer or attendee) has a PopChain account with wallet integration for payments, fees, and gas management.
@@ -178,7 +185,7 @@ To test the contract functions:
 
 ```bash
 # See TESTING_GUIDE.md for complete testing instructions
-sui client call --package <PACKAGE_ID> --module <MODULE> --function <FUNCTION> --args <ARGS> --gas-budget 100000000
+sui client call --package 0xe465d2c1e1973e6031f40278d874572f26300ce069cecaec0d15089ec971aea6 --module <MODULE> --function <FUNCTION> --args <ARGS> --gas-budget 100000000
 ```
 
 ## License
