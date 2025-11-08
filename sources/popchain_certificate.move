@@ -76,7 +76,7 @@ public fun default_popchain_tiers(ctx: &mut TxContext): vector<Tier> {
         price: 100_000_000,  // 0.1 SUIC
     });
     
-    // Tier 1: PopBadge (0.2 SUI)
+    // Tier 1: PopBadge (0.3 SUI)
     vector::push_back(&mut tiers, Tier {
         name: string::utf8(b"PopBadge"),
         description: string::utf8(b"Achievement or side quest badge"),
@@ -84,7 +84,7 @@ public fun default_popchain_tiers(ctx: &mut TxContext): vector<Tier> {
         price: 300_000_000,  // 0.3 SUI
     });
     
-    // Tier 2: PopMedal (0.3 SUI)
+    // Tier 2: PopMedal (0.5 SUI)
     vector::push_back(&mut tiers, Tier {
         name: string::utf8(b"PopMedal"),
         description: string::utf8(b"Recognition or distinction award"),
@@ -92,7 +92,7 @@ public fun default_popchain_tiers(ctx: &mut TxContext): vector<Tier> {
         price: 500_000_000,  // 0.5 SUI
     });
     
-    // Tier 3: PopTrophy (0.4 SUI)
+    // Tier 3: PopTrophy (0.7 SUI)
     vector::push_back(&mut tiers, Tier {
         name: string::utf8(b"PopTrophy"),
         description: string::utf8(b"VIP or sponsor honor NFT"),

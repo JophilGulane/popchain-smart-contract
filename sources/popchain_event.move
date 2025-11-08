@@ -190,6 +190,7 @@ public entry fun mint_certificate_for_attendee(
         treasury_owner,
         ctx
     );
+
     
     event::emit(CertificateMintedToAttendee {
         event_id: object::id(event),
